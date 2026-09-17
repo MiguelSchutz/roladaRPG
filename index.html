@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Roladas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0710;
+    --bg-2: #150e20;
+    --panel: #17101f;
+    --panel-2: #1e1529;
+    --border: #392a4d;
+    --gold: #d8b169;
+    --gold-bright: #f3d597;
+    --red: #ff3b3b;
+    --yellow: #f2c14e;
+    --yellow-dim: #8a691f;
+    --green: #57d97a;
+    --green-bright: #baffce;
+    --neon: #8aff3c;
+    --text: #ece3d6;
+    --text-dim: #a8998a;
+    --text-faint: #675a72;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="light"]){
+      --bg:#0a0710; --bg-2:#150e20; --panel:#17101f; --panel-2:#1e1529;
+      --border:#392a4d; --text:#ece3d6; --text-dim:#a8998a; --text-faint:#675a72;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0a0710; --bg-2:#150e20; --panel:#17101f; --panel-2:#1e1529;
+    --border:#392a4d; --text:#ece3d6; --text-dim:#a8998a; --text-faint:#675a72;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--bg-2), var(--bg) 60%);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    overflow-x: hidden;
+  }
+
+  .stage{ width: 100%; max-width: 560px; }
+
+  header{ text-align: center; margin-bottom: 20px; }
+  header .eyebrow{ font-size: 13px; letter-spacing: .04em; color: var(--text-faint); margin: 0 0 6px; }
+  h1{
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(26px, 6vw, 34px); margin: 0;
+    color: var(--gold-bright);
+    text-shadow: 0 0 24px rgba(216,177,105,.25);
+  }
+
+  .card{
+    position: relative;
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px 22px 22px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .card.shake{ animation: shake .35s ease; }
+  @keyframes shake{
+    0%,100%{ transform: translate(0,0); }
+    20%{ transform: translate(-6px,2px); }
+    40%{ transform: translate(5px,-2px); }
+    60%{ transform: translate(-4px,1px); }
+    80%{ transform: translate(3px,-1px); }
+  }
+
+  
+  .dice-row{ display:grid; grid-template-columns: repeat(6,1fr); gap:8px; margin-bottom: 18px; }
+  .die-btn{
+    background: var(--bg-2); border:1.5px solid var(--border); color: var(--text-dim);
+    font-family:'Cinzel',serif; font-weight:600; font-size:15px; padding:12px 0;
+    border-radius:10px; cursor:pointer;
+    transition: transform .12s ease, border-color .12s ease, color .12s ease, box-shadow .12s ease;
+  }
+  .die-btn:hover{ transform: translateY(-2px); border-color: var(--gold); color: var(--gold-bright); }
+  .die-btn:active{ transform: translateY(0); }
+  .die-btn.active{
+    background: linear-gradient(180deg,#3a2c14,#241a0d);
+    border-color: var(--gold); color: var(--gold-bright);
+    box-shadow: 0 0 0 1px var(--gold) inset, 0 6px 18px -6px rgba(216,177,105,.4);
+  }
+
+  
+  .diff-block{ margin-bottom: 20px; }
+  .diff-head{ display:flex; justify-content:space-between; align-items: baseline; margin-bottom: 8px; }
+  .diff-head span{ font-size:13px; color: var(--text-faint); }
+  .diff-head b{ font-family:'Cinzel',serif; font-size: 14px; color: var(--gold-bright); }
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:6px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
+    outline:none; cursor:pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%;
+    background: var(--text); border: 2px solid var(--bg); box-shadow: 0 0 8px rgba(0,0,0,.5);
+    cursor:pointer; margin-top:-6px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background: var(--text); border: 2px solid var(--bg);
+    cursor:pointer;
+  }
+  .diff-desc{ text-align:center; font-size:12.5px; color: var(--text-faint); margin-top:6px; }
+
+  
+  .gauge-wrap{ margin: 4px 0 20px; }
+  .gauge-label{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; font-size:13px; color:var(--text-faint); }
+  .gauge-label b{ color: var(--text-dim); font-weight:600; }
+
+  .gauge-outer{
+    position: relative;
+    cursor: pointer;
+    touch-action: none;
+    padding: 6px 0;
+  }
+  #gaugeSvg{
+    display:block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  #eyeOutline{
+    fill: none;
+    stroke: var(--neon);
+    stroke-width: 5;
+    filter: drop-shadow(0 0 6px rgba(74, 169, 10, 0.7)) drop-shadow(0 0 14px rgba(138,255,60,.35));
+  }
+  #marker{
+    stroke: #fff;
+    stroke-width: 6;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px #fff);
+  }
+  .tick{ stroke: rgba(255,255,255,.55); stroke-width: 3; }
+
+  .gauge-hint{ text-align:center; font-size:12.5px; color: var(--text-faint); margin-top:10px; min-height:16px; }
+
+ 
+  .roll-btn{
+    width:100%; padding:16px; font-family:'Cinzel',serif; font-weight:700; font-size:17px;
+    color:#120c08; background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border:none; border-radius:12px; cursor:pointer;
+    box-shadow: 0 10px 24px -8px rgba(216,177,105,.5);
+    transition: transform .1s ease, filter .12s ease;
+  }
+  .roll-btn:hover{ filter: brightness(1.06); }
+  .roll-btn:active{ transform: translateY(1px) scale(.995); }
+  .roll-btn.stopping{ background: linear-gradient(180deg,#e6e6e6,#b9b9b9); }
+
+
+  .result{
+    margin-top: 22px;
+    text-align:center;
+    min-height: 120px;
+    position: relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .flash{
+    position:absolute; width:280px; height:280px; border-radius:50%;
+    left:50%; top:50%; transform: translate(-50%,-50%) scale(0);
+    pointer-events:none; opacity:0; filter: blur(4px);
+  }
+  .flash.play{ animation: flashBurst .5s ease-out forwards; }
+  @keyframes flashBurst{
+    0%{ transform: translate(-50%,-50%) scale(.2); opacity:.9; }
+    100%{ transform: translate(-50%,-50%) scale(1); opacity:0; }
+  }
+  .combo-wrap{ position:relative; z-index:1; }
+  .result-num{
+    font-family:'Cinzel',serif; font-weight:700; font-size: 64px; line-height:1;
+    color: var(--text-faint);
+  }
+  .result-tag{
+    margin-top: 4px; font-family:'Cinzel',serif; font-size: 19px; font-weight:700;
+    letter-spacing:.02em; min-height:24px;
+  }
+  .pop{ animation: popIn .5s cubic-bezier(.17,1.4,.4,1) both; }
+  @keyframes popIn{
+    0%{ transform: scale(.15) rotate(-10deg); opacity:0; }
+    55%{ transform: scale(1.2) rotate(4deg); opacity:1; }
+    75%{ transform: scale(.92) rotate(-2deg); }
+    100%{ transform: scale(1) rotate(0); }
+  }
+  .tag-crit{ color: var(--green-bright); text-shadow: 0 0 18px rgba(186,255,206,.8); }
+  .tag-fail{ color: var(--red); text-shadow: 0 0 18px rgba(255,59,59,.7); }
+  .tag-good{ color: var(--gold-bright); text-shadow: 0 0 14px rgba(255, 238, 0, 0.926); }
+  .tag-mid{ color: var(--text-dim); }
+  .tag-low{ color: #c98a4a; }
+
+  /* History */
+  .history{ margin-top: 20px; border-top:1px solid var(--border); padding-top:14px; }
+  .history-title{ font-size:12.5px; color: var(--text-faint); margin-bottom:8px; }
+  .history-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .history-item{ font-size:13px; font-weight:600; padding:5px 10px; border-radius:8px; background: var(--bg-2); border:1px solid var(--border); color: var(--text-dim); }
+  .history-item.crit{ color: var(--green-bright); border-color: rgba(186,255,206,.35); }
+  .history-item.fail{ color: var(--red); border-color: rgba(255,59,59,.4); }
+  .history-empty{ font-size:13px; color: var(--text-faint); }
+
+  footer{ text-align:center; margin-top:16px; font-size:12px; color: var(--text-faint); }
+
+  @media (max-width:420px){
+    .dice-row{ gap:6px; }
+    .die-btn{ font-size:13px; padding:10px 0; }
+    .result-num{ font-size:52px; }
+    .result-tag{ font-size:16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <header>
+    <p class="eyebrow">Teste</p>
+    <h1>ROLADA</h1>
+  </header>
+
+  <div class="card" id="card">
+    <div class="dice-row" id="diceRow"></div>
+
+    <div class="diff-block">
+      <div class="diff-head"><span>dificuldade</span><b id="diffValue">5 · Normal</b></div>
+      <input type="range" id="diffSlider" min="1" max="10" value="5" step="1">
+      <div class="diff-desc" id="diffDesc"></div>
+    </div>
+
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>toque para parar a barra</span><b id="gaugeDieLabel">d20</b></div>
+      <div class="gauge-outer" id="gaugeOuter">
+        <svg id="gaugeSvg" viewBox="0 0 700 140" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <clipPath id="eyeClip"><path d="M10,70 Q350,-16 690,70 Q350,156 10,70 Z"></path></clipPath>
+          </defs>
+          <line class="tick" x1="6" y1="30" x2="6" y2="46"></line>
+          <line class="tick" x1="6" y1="94" x2="6" y2="110"></line>
+          <line class="tick" x1="694" y1="30" x2="694" y2="46"></line>
+          <line class="tick" x1="694" y1="94" x2="694" y2="110"></line>
+          <g clip-path="url(#eyeClip)">
+            <rect x="10" y="-16" width="680" height="172" fill="#000"></rect>
+            <g id="sectorLines"></g>
+            <line id="marker" x1="350" y1="-16" x2="350" y2="156"></line>
+          </g>
+          <path id="eyeOutline" d="M10,70 Q350,-16 690,70 Q350,156 10,70 Z"></path>
+        </svg>
+      </div>
+      <div class="gauge-hint" id="gaugeHint">escolha um dado e role para começar</div>
+    </div>
+
+    <button class="roll-btn" id="rollBtn">Rolar</button>
+
+    <div class="result">
+      <div class="flash" id="flash"></div>
+      <div class="combo-wrap" id="comboWrap">
+        <div class="result-num" id="resultNum">–</div>
+        <div class="result-tag" id="resultTag"></div>
+      </div>
+    </div>
+
+    <div class="history">
+      <div class="history-title">últimas rolagens</div>
+      <div class="history-list" id="historyList">
+        <span class="history-empty">nenhuma rolagem ainda</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>acerte o centro verde para o valor máximo — nas pontas vermelhas, o pior resultado</footer>
+</div>
+
+
+  <!-- Sons das faixas de resultado: som1.mp3 = pior, som5.mp3 = melhor -->
+  <audio id="som1" src="som1.mp3" preload="auto"></audio>
+  <audio id="som2" src="som2.mp3" preload="auto"></audio>
+  <audio id="som3" src="som3.mp3" preload="auto"></audio>
+  <audio id="som4" src="som4.mp3" preload="auto"></audio>
+  <audio id="som5" src="som5.mp3" preload="auto"></audio>
+
+<script>
+(function(){
+  const DICE = [4,6,8,10,12,20];
+  let currentDie = 20;
+  let difficulty = 5;
+
+  try {
+    const savedDie = localStorage.getItem('rpg-gauge-die');
+    if (savedDie && DICE.includes(parseInt(savedDie,10))) currentDie = parseInt(savedDie,10);
+    const savedDiff = localStorage.getItem('rpg-gauge-difficulty');
+    if (savedDiff) difficulty = Math.min(10, Math.max(1, parseInt(savedDiff,10)));
+  } catch(e) {}
+
+  const diceRow = document.getElementById('diceRow');
+  const gaugeDieLabel = document.getElementById('gaugeDieLabel');
+  const gaugeOuter = document.getElementById('gaugeOuter');
+  const sectorLines = document.getElementById('sectorLines');
+  const marker = document.getElementById('marker');
+  const gaugeHint = document.getElementById('gaugeHint');
+  const rollBtn = document.getElementById('rollBtn');
+  const resultNum = document.getElementById('resultNum');
+  const resultTag = document.getElementById('resultTag');
+  const comboWrap = document.getElementById('comboWrap');
+  const flash = document.getElementById('flash');
+  const historyList = document.getElementById('historyList');
+  const diffSlider = document.getElementById('diffSlider');
+  const diffValue = document.getElementById('diffValue');
+  const diffDesc = document.getElementById('diffDesc');
+  const card = document.getElementById('card');
+
+  
+  const EYE_X0 = 10;
+  const EYE_X1 = 690;
+  const EYE_SPAN = EYE_X1 - EYE_X0;
+
+  const DIFF_LABELS = {
+    1:'Trivial', 2:'Muito fácil', 3:'Fácil', 4:'Fácil', 5:'Normal',
+    6:'Normal', 7:'Difícil', 8:'Difícil', 9:'Muito difícil', 10:'John Rolada'
+  };
+  const DIFF_DESCS = {
+    1:'barra lenta, centro bem largo — quase impossível errar',
+    2:'barra lenta, centro largo',
+    3:'tranquilo',
+    4:'tranquilo',
+    5:'mais rápido e o centro mais estreito',
+    6:'mais rápido e o centro mais estreito',
+    7:'barra rápida, centro estreito',
+    8:'barra rápida, centro estreito',
+    9:'centro minúsculo',
+    10:'barra veloz'
+  };
+
+  function updateDiffUI(){
+    diffSlider.value = difficulty;
+    diffValue.textContent = difficulty + ' · ' + DIFF_LABELS[difficulty];
+    diffDesc.textContent = DIFF_DESCS[difficulty];
+    renderGaugeVisual();
+  }
+
+  diffSlider.addEventListener('input', function(){
+    if (animState.running) { diffSlider.value = difficulty; return; }
+    difficulty = parseInt(diffSlider.value,10);
+    try { localStorage.setItem('rpg-gauge-difficulty', String(difficulty)); } catch(e) {}
+    updateDiffUI();
+  });
+
+  function renderDice(){
+    diceRow.innerHTML = '';
+    DICE.forEach(function(d){
+      const btn = document.createElement('button');
+      btn.className = 'die-btn' + (d === currentDie ? ' active' : '');
+      btn.textContent = 'd' + d;
+      btn.setAttribute('aria-pressed', d === currentDie ? 'true' : 'false');
+      btn.addEventListener('click', function(){
+        if (animState.running) return;
+        currentDie = d;
+        try { localStorage.setItem('rpg-gauge-die', String(d)); } catch(e) {}
+        renderDice();
+        gaugeDieLabel.textContent = 'd' + d;
+      });
+      diceRow.appendChild(btn);
+    });
+    gaugeDieLabel.textContent = 'd' + currentDie;
+  }
+
+  function renderHistory(){
+    if (!history.length){
+      historyList.innerHTML = '<span class="history-empty">nenhuma rolagem ainda</span>';
+      return;
+    }
+    historyList.innerHTML = '';
+    history.forEach(function(h){
+      const el = document.createElement('span');
+      el.className = 'history-item' + (h.crit ? ' crit' : (h.fail ? ' fail' : ''));
+      el.textContent = 'd' + h.die + ': ' + h.value;
+      historyList.appendChild(el);
+    });
+  }
+
+  let history = [];
+  try {
+    const savedHist = JSON.parse(localStorage.getItem('rpg-gauge-history') || '[]');
+    if (Array.isArray(savedHist)) history = savedHist.slice(0,8);
+  } catch(e) {}
+
+  function pushHistory(die, value){
+    history.unshift({ die: die, value: value, crit: value === die, fail: value === 1 });
+    history = history.slice(0,8);
+    try { localStorage.setItem('rpg-gauge-history', JSON.stringify(history)); } catch(e) {}
+    renderHistory();
+  }
+
+  // --- difficulty -> zone widths + math curve ---
+  function zoneFractions(){
+    const t = (difficulty - 1) / 9; // 0..1
+    const redCap = 0.05 + t * 0.15;                  // 0.05 -> 0.20 (each side)
+    const green = Math.max(0.02, 0.12 - t * 0.09);   // 0.12 -> 0.03 (total width)
+    return { redCap: redCap, green: green };
+  }
+  function gammaForDifficulty(){
+    const t = (difficulty - 1) / 9;
+    return 1 - t * 0.62; // 1 -> 0.38
+  }
+  function speedForDifficulty(){
+    const t = (difficulty - 1) / 9;
+    return 0.75 + t * 1.35; // widths per second
+  }
+
+  function pctToX(pct){ return EYE_X0 + (pct/100) * EYE_SPAN; }
+
+  function sectorLine(pct, color, width, glow){
+    const x = pctToX(pct);
+    const glowStyle = glow ? ' filter="drop-shadow(0 0 4px ' + color + ')"' : '';
+    return '<line x1="' + x + '" y1="-16" x2="' + x + '" y2="156" stroke="' + color + '" stroke-width="' + width + '"' + glowStyle + '/>';
+  }
+
+  function sectorRect(pctA, pctB, color, glow){
+    const xa = pctToX(pctA);
+    const xb = pctToX(pctB);
+    const glowStyle = glow ? ' filter="drop-shadow(0 0 6px ' + color + ')"' : '';
+    return '<rect x="' + xa + '" y="-16" width="' + (xb - xa) + '" height="172" fill="' + color + '"' + glowStyle + '/>';
+  }
+
+  function renderGaugeVisual(){
+    const z = zoneFractions();
+    const redPct = z.redCap * 100;
+    const greenHalfPct = (z.green / 2) * 100;
+    const cL = 50 - greenHalfPct;
+    const cR = 50 + greenHalfPct;
+    const rR = 100 - redPct;
+    const gap = 4; // espaço entre a faixa verde e as linhas laranja, em pontos percentuais
+
+    sectorLines.innerHTML =
+      sectorLine(redPct, 'var(--red)', 4, true) +
+      sectorLine(rR, 'var(--red)', 4, true) +
+      sectorLine(cL - gap, 'var(--yellow)', 4, true) +
+      sectorLine(cR + gap, 'var(--yellow)', 4, true) +
+      sectorRect(cL, cR, 'var(--green-bright)', true);
+  }
+
+  // --- animation ---
+  const animState = { running:false, pos:0.5, dir:1, raf:null, lastTs:null };
+
+  function setMarkerVisual(pos){
+    const x = EYE_X0 + pos * EYE_SPAN;
+    marker.setAttribute('x1', x);
+    marker.setAttribute('x2', x);
+  }
+  setMarkerVisual(0.5);
+
+  function step(ts){
+    if (animState.lastTs == null) animState.lastTs = ts;
+    const dt = (ts - animState.lastTs)/1000;
+    animState.lastTs = ts;
+    const speed = speedForDifficulty();
+    animState.pos += animState.dir * speed * dt;
+    if (animState.pos >= 1){ animState.pos = 1; animState.dir = -1; }
+    if (animState.pos <= 0){ animState.pos = 0; animState.dir = 1; }
+    setMarkerVisual(animState.pos);
+    if (animState.running) animState.raf = requestAnimationFrame(step);
+  }
+
+  function startRoll(){
+    if (animState.running) return;
+    animState.running = true;
+    animState.pos = 0.5;
+    animState.dir = Math.random() < 0.5 ? -1 : 1;
+    animState.lastTs = null;
+
+    comboWrap.classList.remove('pop');
+    resultNum.className = 'result-num';
+    resultNum.textContent = '–';
+    resultTag.textContent = '';
+    resultTag.className = 'result-tag';
+    flash.classList.remove('play');
+
+    rollBtn.textContent = 'Parar';
+    rollBtn.classList.add('stopping');
+    gaugeHint.textContent = 'toque na barra, no botão ou aperte espaço para parar';
+    animState.raf = requestAnimationFrame(step);
+  }
+
+  const PHRASES = {
+    crit: ['PERFEITO!!', 'CRÍTICO!', 'EXCELENTE!', 'MATOU A PAU!'],
+    good: ['ÓTIMO!', 'MANDOU BEM!', 'BOA ROLADA!'],
+    mid:  ['NA MÉDIA', 'OK', 'RAZOÁVEL'],
+    low:  ['FRACO...', ':O', 'PERIGO...', 'NO LIMITE'],
+    fail: ['FALHA CRÍTICA!', 'BUCHA...', 'PÉSSIMO!', '👀']
+  };
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+
+  // --- resultado -> som ---
+  // Divide os possíveis resultados em 5 faixas:
+  // faixa 1 = resultado mais baixo, faixa 5 = resultado mais alto.
+  function soundForValue(value, max){
+    const ratio = (value - 1) / Math.max(1, max - 1);
+    const index = Math.min(5, Math.floor(ratio * 5) + 1);
+    return document.getElementById('som' + index);
+  }
+
+  function playResultSound(value, max){
+    const audio = soundForValue(value, max);
+    if (!audio) return;
+
+    // Reinicia o áudio caso o mesmo resultado seja obtido novamente.
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch(function(){});
+  }
+
+  function stopRoll(){
+    if (!animState.running) return;
+    animState.running = false;
+    if (animState.raf) cancelAnimationFrame(animState.raf);
+
+    const dist = Math.abs(animState.pos - 0.5) * 2; // 0 center .. 1 edge
+    const gamma = gammaForDifficulty();
+    const effDist = Math.pow(dist, gamma);
+    const max = currentDie;
+    let value = max - Math.floor(effDist * max);
+    value = Math.max(1, Math.min(max, value));
+
+    let tier, flashColor;
+    if (value === max){ tier='crit'; flashColor='rgba(186,255,206,.55)'; }
+    else if (value === 1){ tier='fail'; flashColor='rgba(255,59,59,.5)'; }
+    else if (value >= Math.ceil(max*0.65)){ tier='good'; flashColor='rgba(243,213,151,.45)'; }
+    else if (value >= Math.ceil(max*0.3)){ tier='mid'; flashColor='rgba(168,153,138,.3)'; }
+    else { tier='low'; flashColor='rgba(201,138,74,.35)'; }
+
+    resultNum.textContent = String(value);
+    resultTag.textContent = pick(PHRASES[tier]);
+    playResultSound(value, max);
+    resultTag.className = 'result-tag tag-' + tier;
+
+    if (tier==='crit') resultNum.style.color = 'var(--green-bright)';
+    else if (tier==='fail') resultNum.style.color = 'var(--red)';
+    else if (tier==='good') resultNum.style.color = 'var(--gold-bright)';
+    else if (tier==='mid') resultNum.style.color = 'var(--text)';
+    else resultNum.style.color = '#c98a4a';
+
+    flash.style.background = 'radial-gradient(circle, ' + flashColor + ' 0%, transparent 70%)';
+    void comboWrap.offsetWidth;
+    comboWrap.classList.add('pop');
+    void flash.offsetWidth;
+    flash.classList.add('play');
+
+    if (tier === 'crit' || tier === 'fail'){
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+    }
+
+    pushHistory(max, value);
+
+    rollBtn.textContent = 'Rolar';
+    rollBtn.classList.remove('stopping');
+    gaugeHint.textContent = 'escolha um dado e role de novo quando quiser';
+  }
+
+  rollBtn.addEventListener('click', function(){
+    if (animState.running) stopRoll(); else startRoll();
+  });
+  gaugeOuter.addEventListener('click', function(){ if (animState.running) stopRoll(); });
+  gaugeOuter.addEventListener('touchstart', function(e){
+    if (animState.running){ e.preventDefault(); stopRoll(); }
+  }, { passive:false });
+  document.addEventListener('keydown', function(e){
+    if (e.code === 'Space'){
+      e.preventDefault();
+      if (animState.running) stopRoll(); else startRoll();
+    }
+  });
+
+  renderDice();
+  renderHistory();
+  updateDiffUI();
+})();
+</script>
+
+</body>
+</html>
